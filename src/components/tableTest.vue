@@ -1,8 +1,11 @@
-
 <script>
 import TableHelper from "../tableHelper";
+import vhtml from "./vhtml";
 
 export default {
+  components: {
+    vhtml,
+  },
   props: {
     tableHelper: {
       type: TableHelper,
@@ -68,17 +71,34 @@ export default {
             on: createDataObj(tableEvents),
           },
           Object.keys(tableRef).map((key) => {
-            return _c("el-table-column", {
-              // 相当于 <el-table-column :prop="key" :label=".../>
-              props: createDataObj(
-                {
-                  prop: key,
-                  label: tableRef[key],
-                },
-                tableRef[key].colAttrs
-              ),
-              //  * 实现 el-table-column 下 template + scoped 自定义内容(未完成)
-            });
+            return _c(
+              "el-table-column",
+              {
+                // 相当于 <el-table-column :prop="key" :label=".../>
+                props: createDataObj(
+                  {
+                    prop: key,
+                    label: tableRef[key],
+                  },
+                  tableRef[key].colAttrs
+                ),
+              },
+              [
+                _c("vhtml", {
+                  // 相当于 <template v-slot="prop" />
+                  scopedSlots: {
+                    default(prop) {
+                      console.log(prop);
+                      console.log(this.$scopedSlots);
+                      const obj = {};
+                      obj[key] = prop.row[key];
+                      // 相当于 <slot name="key" :key="value" />
+                      return this.$scopedSlots[key](obj);
+                    },
+                  },
+                }),
+              ]
+            );
             // map 结束位置 ⬇
           })
         ),

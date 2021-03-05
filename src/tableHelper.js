@@ -9,23 +9,10 @@
  */
 function TableHelper(tableOptions = {}) {
   // 为 tableOptions 提供默认值
-  if (!tableOptions.tableRef) {
-    tableOptions.tableRef = {}
-  } else if (!isObj(tableOptions.tableRef)) {
-    throw new TypeError("类型错误：tableRef 应该是一个 对象")
-  }
+  defaultValueInit({}, tableOptions.tableRef, isObj);
   // 为 tableData 提供默认值
-  if (!tableOptions.tableData) {
-    tableOptions.tableData = []
-  } else if (!isArr(tableOptions.tableData)) {
-    throw new TypeError("类型错误：tableRef 应该是一个 数组")
-  }
-  // tableData 里没有 template 模板的则添加
-  // tableOptions.tableData.forEach(e => {
-  //   for (let key in e) {
-  //     !e[key].template && (e[key] = { value: e[key], template: e[key] })
-  //   }
-  // })
+  defaultValueInit([], tableOptions.tableData, isArr);
+
   this.tableOptions = Object.assign({}, this.global, tableOptions)
 }
 
@@ -106,27 +93,20 @@ function isArr(test) {
 function isFun(test) {
   return typeof test === 'function'
 }
+/**
+   * 该函数用于给予 目标 一个指定的默认值
+   * 可选 ==> passFun 是否通过校验的函数
+   * @param {any} defaultV 
+   * @param {any} target 
+   * @param {boolean} passFun
+   */
+function defaultValueInit(defaultV, target, passFun) {
+  if (!target) {
+    target = defaultV;
+  } else if (!passFun(target)) {
+    throw new TypeError("类型错误，传入的参数：" +
+      target + " 应为：" + defaultV)
+  }
+}
 
-{/* <template>
-  <div>
-    {{ tableHelper }}
-    <el-table
-      :data="tableHelper.tableOptions.tableData"
-      @row-click="tableHelper.tableOptions.tableEvents.rowClick"
-      style="width: 100%"
-    >
-      <el-table-column
-        v-for="(value, key) in tableHelper.tableOptions.tableRef"
-        :key="key"
-        :prop="key"
-        :label="value"
-        width="180"
-      >
-        <template v-slot="scoped">
-          <div v-html="scoped.row[key].template"></div>
-        </template>
-      </el-table-column>
-    </el-table>
-  </div>
-</template> */}
 export default TableHelper

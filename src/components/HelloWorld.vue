@@ -2,12 +2,31 @@
   <div class="hello">
     <table-test :tableHelper="tableHelper">
     </table-test>
+    <!-- <testSlot>
+      <slot text="scoped">
+        {{ scoped }}
+      </slot>
+    </testSlot> -->
+    <el-table :data="[{ test: 'TEST' }]">
+      <el-table-column
+        label="123"
+        prop="test"
+      >
+        <template v-slot="prop">
+          <slot
+            name="KEY"
+            :test="prop.row.test"
+          >{{ prop.row }}</slot>
+        </template>
+      </el-table-column>
+    </el-table>
   </div>
 </template>
 
 <script>
 import TableHelper from "../tableHelper";
 import tableTest from "./tableTest.vue";
+// import testSlot from "./testSlot.vue";
 
 export default {
   components: { tableTest },
