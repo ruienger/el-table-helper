@@ -1,7 +1,8 @@
 .DS_Store
 node_modules
 /dist
-src/components/testSlot.vue
+src/components/child.vue
+src/components/vhtml.vue
 
 
 # local env files
