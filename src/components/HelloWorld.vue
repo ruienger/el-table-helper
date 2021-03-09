@@ -1,5 +1,6 @@
 <template>
   <div class="hello">
+    {{ tableHelper }}
     <ez-table :tableHelper="tableHelper">
       <template v-slot:test1="prop">
         <div :style="prop.row['test1'] === '第一行测试1'?'color:red':'color:blue'">{{prop.row['test1']}}</div>
@@ -11,7 +12,9 @@
 <script>
 import TableHelper from "../tableHelper";
 import ezTable from "./ez-table.vue";
-// import testSlot from "./testSlot.vue";
+
+let t = new TableHelper({});
+t.setGlobalOptions("loading", true);
 
 export default {
   components: { ezTable },
@@ -31,15 +34,19 @@ export default {
         { test1: "第一行测试1", test2: "第一行测试2" },
         { test1: "第二行测试1", test2: "第二行测试2" },
       ],
-      tableEvents: {
+      loading: true,
+      elTableEvents: {
         rowClick: (row) => {
           console.log(row);
         },
       },
-      tableAttr: {
-        cellStyle: {
-          "text-align": "center",
-        },
+      elTableAttr: {},
+      events: {},
+      _class: {
+        "center-box": true,
+      },
+      refresh(data) {
+        console.log("refreshing" + data);
       },
     });
   },
@@ -61,5 +68,8 @@ li {
 }
 a {
   color: #42b983;
+}
+.center-box {
+  text-align: center;
 }
 </style>
