@@ -72,6 +72,64 @@ export default {
     function strParser(str) {
       return str.replace(/[A-Z]/g, (word) => "-" + word.toLowerCase());
     }
+
+    /**
+     *  rendeColumn 返回 mapper 方法执行后的返回值
+     *  mapper 方法将对象的 value,key 传入回调函数
+     *    并返回由 回调函数的返回值 组成的数组
+     *  该例中， 回调函数的返回值是 VNode 节点
+     *    同时，在进行完配置后，如果 传入的 value有children属性
+     *    则再次调用 rendeColumn，使其返回的数组成为该 VNode 的子节点
+     *    如此递归
+     */
+
+    /**
+     * 遍历 tableRef 中的各项生成 el-table-columns,支持嵌套
+     *  如若 该项 有 children 属性则递归处理
+     */
+    function rendeColumn(ref) {
+      // item 可能有两种结构 例如 dydj: "电压等级" / jcxx: { label: "基础信息", children: { dydj: "电压等级" }, colAttrs: {...}}
+      return ref.mapper((value, key, isObj = window.isObj(value)) => {
+        console.log(!value.children);
+        return _c(
+          "el-table-column",
+          {
+            // 相当于 <el-table-column :prop="key" :label=".../>
+            props: createDataObj(
+              {
+                prop: key,
+                label: isObj ? value.label : value,
+              },
+              elTableColAttrs,
+              value.colAttrs
+            ),
+            // 相当于 <template v-slot="prop" />
+            scopedSlots:
+              // 没有 children 属性的才添加具名插槽
+              value.children
+                ? {
+                    default(prop) {
+                      // prop 为 el-table-column 作用域插槽中的数据
+
+                      // 在使用组件时，如果没有提供具名插槽将会导致：
+                      //    该组件的 this.$scopedSlots 中没有对应的 name 属性
+                      // 因此在不提供具名插槽时使用默认值
+                      // 该部分也可以使用 插槽后备值 的方式实现
+                      return typeof _this.$scopedSlots[key] === "function"
+                        ? _this.$scopedSlots[key]({
+                            index: prop.$index,
+                            col: prop.column,
+                            row: prop.row,
+                          })
+                        : _c("span", prop.row[key]); // 具名插槽
+                    },
+                  }
+                : {},
+          },
+          value.children ? rendeColumn(value.children) : undefined
+        );
+      });
+    }
     return _c(
       "el-table",
       {
@@ -95,38 +153,7 @@ export default {
         ),
         on: createDataObj(elTableEvents),
       },
-      Object.keys(tableRef).map((key) => {
-        return _c("el-table-column", {
-          // 相当于 <el-table-column :prop="key" :label=".../>
-          props: createDataObj(
-            {
-              prop: key,
-              label: tableRef[key],
-            },
-            elTableColAttrs,
-            tableRef[key].colAttrs
-          ),
-          // 相当于 <template v-slot="prop" />
-          scopedSlots: {
-            default(prop) {
-              // prop 为 el-table-column 作用域插槽中的数据
-
-              // 在使用组件时，如果没有提供具名插槽将会导致：
-              //    该组件的 this.$scopedSlots 中没有对应的 name 属性
-              // 因此在不提供具名插槽时使用默认值
-              // 该部分也可以使用 插槽后备值 的方式实现
-              return typeof _this.$scopedSlots[key] === "function"
-                ? _this.$scopedSlots[key]({
-                    index: prop.$index,
-                    col: prop.column,
-                    row: prop.row,
-                  })
-                : _c("span", prop.row[key]); // 具名插槽
-            },
-          },
-        });
-        // map 结束位置 ⬇
-      })
+      rendeColumn(tableRef)
     );
   },
 };

@@ -28,12 +28,43 @@ export default {
     };
   },
   created() {
-    this.tableHelper = new TableHelper({
-      tableRef: { test1: "测试1", test2: "测试2" },
-      tableData: [
+    /* eslint-disable */
+    const cTest = {
+        test1: {
+          label: "测试1",
+          children: {
+            test1_1: "测试1——1",
+            test1_2: "测试1——2",
+            test1_3: "测试1——3",
+          },
+        },
+        test2: { label: "测试2", children: { test2_1: "测试2——1" } },
+      },
+      test = {
+        test1: "测试1",
+        test2: "测试2",
+      },
+      dataT = [
         { test1: "第一行测试1", test2: "第一行测试2" },
         { test1: "第二行测试1", test2: "第二行测试2" },
       ],
+      dataCT = [
+        {
+          test1_1: "第一行测试1",
+          test1_2: "第一行测试2",
+          test1_3: "第一行测试3",
+          test2_1: "第一行测试4",
+        },
+        {
+          test1_1: "第二行测试1",
+          test1_2: "第二行测试2",
+          test1_3: "第二行测试3",
+          test2_1: "第二行测试4",
+        },
+      ];
+    this.tableHelper = new TableHelper({
+      tableRef: cTest,
+      tableData: dataCT,
       loading: true,
       elTableEvents: {
         rowClick: (row) => {

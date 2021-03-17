@@ -1,3 +1,6 @@
+import setGlobal from '@/globalMethods'
+setGlobal();
+
 /**
  * 表格创建小助手！
  * 使用方式： 全局/局部注册 simp-table 组件 
@@ -8,11 +11,11 @@
  * @param {Object} tableOptions 
  */
 function TableHelper(tableInfo = {}) {
-  if (isObj(tableInfo)) {
+  if (window.isObj(tableInfo)) {
     // 为 tableOptions 提供默认值
-    defaultValueInit({}, tableInfo.tableRef, isObj);
+    defaultValueInit({}, tableInfo.tableRef, window.isObj);
     // 为 tableData 提供默认值
-    defaultValueInit([], tableInfo.tableData, isArr);
+    defaultValueInit([], tableInfo.tableData, window.isArr);
 
     ({
       tableData: this.tableData,
@@ -59,36 +62,11 @@ TableHelper.prototype.global = {// 默认的 全局设置
  * @param {any} value 
  */
 TableHelper.prototype.setGlobalOptions = function (key, value) {
-  if (isTypeSame(this.global[key], value)) {
+  if (window.isTypeSame(this.global[key], value)) {
     this.global[key] = value;
   } else {
-    throw new TypeError("设置的值 " + value + " 的类型与预定" + key + "的类型" + getType(this.global[key]) + "不符")
+    throw new TypeError("设置的值 " + value + " 的类型与预定" + key + "的类型" + window.getType(this.global[key]) + "不符")
   }
-}
-
-
-
-
-/* eslint-disable */
-// 判断是否为对象
-function isObj(test) {
-  return Object.prototype.toString.call(test) === "[object Object]"
-}
-// 判断是否为数组
-function isArr(test) {
-  return Array.isArray(test)
-}
-// 判断是否为函数
-function isFun(test) {
-  return typeof test === 'function'
-}
-// 判断类型是否一致
-function isTypeSame(tar, val) {
-  return getType(tar) === getType(val)
-}
-// 获取类型
-function getType(tar) {
-  return isObj(tar) ? "object" : isArr(tar) ? "array" : typeof tar
 }
 /**
    * 该函数用于给予 目标 一个指定的默认值
