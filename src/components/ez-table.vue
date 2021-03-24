@@ -6,23 +6,9 @@ export default {
       type: TableHelper,
       default: () => new TableHelper(),
     },
-  },
-  data() {
-    return {
-      loading: true,
-    };
-  },
-  methods: {
-    async refresh() {
-      this.loading = true;
-      await setTimeout(() => {
-        this.tableHelper.refresh.call(this, { as: 123123123123 });
-        this.loading = false;
-      }, 2000);
+    loading: {
+      default: false,
     },
-  },
-  created() {
-    this.refresh();
   },
   /**
    * 渲染函数
@@ -49,6 +35,8 @@ export default {
       style,
       ref,
       _class,
+      indexCol,
+      selectionCol,
     } = _this.tableHelper;
 
     /**
@@ -56,8 +44,8 @@ export default {
      *   将对象形式出现的组件属性转换为 数据对象
      *  例如 { maxHeight: 100 } ==> :max-height = 100
      */
-    function createDataObj() {
-      const dataOpts = Object.assign(...arguments);
+    function createDataObj(...rest) {
+      const dataOpts = Object.assign(...rest);
       const props = {};
       for (const key in dataOpts) {
         props[strParser(key)] = dataOpts[key];
@@ -74,24 +62,13 @@ export default {
     }
 
     /**
-     *  rendeColumn 返回 mapper 方法执行后的返回值
-     *  mapper 方法将对象的 value,key 传入回调函数
-     *    并返回由 回调函数的返回值 组成的数组
-     *  该例中， 回调函数的返回值是 VNode 节点
-     *    同时，在进行完配置后，如果 传入的 value有children属性
-     *    则再次调用 rendeColumn，使其返回的数组成为该 VNode 的子节点
-     *    如此递归
-     */
-
-    /**
      * 遍历 tableRef 中的各项生成 el-table-columns,支持嵌套
      *  如若 该项 有 children 属性则递归处理
      */
     function rendeColumn(ref) {
       // item 可能有两种结构 例如 dydj: "电压等级" / jcxx: { label: "基础信息", children: { dydj: "电压等级" }, colAttrs: {...}}
-      return ref.mapper((value, key, isObj = window.isObj(value)) => {
-        console.log(!value.children);
-        return _c(
+      return ref.mapper((value, key, isObj = window.isObj(value)) =>
+        _c(
           "el-table-column",
           {
             // 相当于 <el-table-column :prop="key" :label=".../>
@@ -106,7 +83,7 @@ export default {
             // 相当于 <template v-slot="prop" />
             scopedSlots:
               // 没有 children 属性的才添加具名插槽
-              value.children
+              !value.children
                 ? {
                     default(prop) {
                       // prop 为 el-table-column 作用域插槽中的数据
@@ -127,8 +104,19 @@ export default {
                 : {},
           },
           value.children ? rendeColumn(value.children) : undefined
-        );
-      });
+        )
+      );
+    }
+
+    /**
+     * 遍历表格 index、selection 列
+     */
+    function rendePreColumn(options) {
+      return options.map((value) =>
+        _c("el-table-column", {
+          props: createDataObj(value.colAttrs),
+        })
+      );
     }
     return _c(
       "el-table",
@@ -153,7 +141,10 @@ export default {
         ),
         on: createDataObj(elTableEvents),
       },
-      rendeColumn(tableRef)
+      [
+        ...rendePreColumn([selectionCol, indexCol].filter((e) => !!e)),
+        ...rendeColumn(tableRef),
+      ]
     );
   },
 };

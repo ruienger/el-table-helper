@@ -43,6 +43,7 @@ function setGlobal() {
   globalEve.isObj = isObj;
   globalEve.isArr = isArr;
   globalEve.isFun = isFun;
+  globalEve.getType = getType;
   globalEve.isTypeSame = isTypeSame;
 }
 

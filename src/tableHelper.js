@@ -11,11 +11,13 @@ setGlobal();
  * @param {Object} tableOptions 
  */
 function TableHelper(tableInfo = {}) {
+  // tableInfo 为对象时才进行下一步
   if (window.isObj(tableInfo)) {
     // 为 tableOptions 提供默认值
     defaultValueInit({}, tableInfo.tableRef, window.isObj);
     // 为 tableData 提供默认值
     defaultValueInit([], tableInfo.tableData, window.isArr);
+
 
     ({
       tableData: this.tableData,
@@ -29,10 +31,24 @@ function TableHelper(tableInfo = {}) {
       style: this.style,
       attrs: this.attrs,
       ref: this.ref,
-      refresh: this.refresh,
-      reset: this.reset,
-      exportExcel: this.exportExcel,
+      indexCol: this.indexCol,
+      selectionCol: this.selectionCol,
     } = Object.assign({}, this.global, tableInfo))
+
+    // 判断是否要添加 index、selection 列
+    if (this.indexCol) {
+      this.indexCol = Object.assign({
+        colAttrs: { type: "index" }
+      }, this.indexCol)
+    }
+    if (this.selectionCol) {
+      this.selectionCol = Object.assign({
+        colAttrs: { type: "selection" }
+      }, this.selectionCol)
+    }
+
+  } else {
+    throw new TypeError("the tableInfo expect type object but got " + window.getType(tableInfo))
   }
 }
 
@@ -54,19 +70,30 @@ TableHelper.prototype.global = {// 默认的 全局设置
   },
   elTableColAttrs: {
   },
-  _class: {}, style: {}, attrs: {}, ref: "", refresh() { }, reset() { }, exportExcel() { }
+  indexCol: false,
+  selectionCol: false,
+  _class: {}, style: {}, attrs: {}, ref: ""
 }
 /**
  * 修改全局配置，修改成功则不返回值，失败则抛出异常
  * @param {string} key 
  * @param {any} value 
  */
-TableHelper.prototype.setGlobalOptions = function (key, value) {
-  if (window.isTypeSame(this.global[key], value)) {
+TableHelper.prototype.setGlobalOption = function (key, value) {
+  if (this.global[key] !== undefined) {
     this.global[key] = value;
   } else {
-    throw new TypeError("设置的值 " + value + " 的类型与预定" + key + "的类型" + window.getType(this.global[key]) + "不符")
+    console.warn("设置的键 " + key + " 不包括在全局配置内")
   }
+}
+/**
+ * 根据传入的对象修改全局配置，修改成功则不返回值，失败则保持原样
+ * @param {object} options 
+ */
+TableHelper.prototype.setGlobalOptions = function (GLopts) {
+  GLopts.mapper((value, key) => {
+    this.setGlobalOption(key, value);
+  })
 }
 /**
    * 该函数用于给予 目标 一个指定的默认值
